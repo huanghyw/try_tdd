@@ -12,6 +12,11 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.browser.quit()
 
+    def check_for_row_in_list_table(self, row_text):
+        table = self.browser.find_element_by_id('id_list_table')
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertIn(row_text, [row.text for row in rows])
+
     def test_can_start_a_list_and_retrieve_it_later(self):
         # 张三听说有一个在线待办事项应用
         # 打开浏览器，访问这个应用的网址
@@ -39,16 +44,29 @@ class NewVisitorTest(unittest.TestCase):
         # 页面显示"1：买一件衣服"
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')
-        self.assertTrue(
-            any(row.text == '1：买一件衣服' for row in rows),
-            f'新添加的待办事项保存失败，当前内容是：\n{table.text}'
-        )
+        self.check_for_row_in_list_table('1：买一件衣服')
 
         # 页面又显示了一个文本框，可以输入其它待办事项
+        input_box = self.browser.find_element_by_id('id_new_item')
+        self.assertEqual(
+            input_box.get_attribute('placeholder'),
+            '输入一个待办事项'
+        )
+
         # 他输入了"买一条裤子"
+        input_box.send_keys("买一条裤子")
+
+        # 输入完成后，按回车，页面刷新
+        input_box.send_keys(Keys.ENTER)
+        time.sleep(1)
+
+        # 页面再次刷新，"1：买一件衣服"和"2：买一条裤子"这两条备忘
+        self.check_for_row_in_list_table('1：买一件衣服')
+        self.check_for_row_in_list_table('2：买一条裤子')
+
         self.fail("Finish the test!")
 
-        # 页面再次刷新，他的清单中显示了这两个待办事项
+        # 接下来检查网站到底能不能记住待办事项
         # 。。。
 
 
