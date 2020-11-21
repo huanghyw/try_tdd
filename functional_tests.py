@@ -40,8 +40,8 @@ class NewVisitorTest(unittest.TestCase):
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')
         self.assertTrue(
-            any(row.text == '1:买一件衣服' for row in rows),
-            '新添加的待办事项保存失败'
+            any(row.text == '1：买一件衣服' for row in rows),
+            f'新添加的待办事项保存失败，当前内容是：\n{table.text}'
         )
 
         # 页面又显示了一个文本框，可以输入其它待办事项
