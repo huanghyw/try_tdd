@@ -23,7 +23,7 @@ class NewVisitorTest(unittest.TestCase):
         self.assertIn('待办事项', header_text)
 
         # 应用邀请她输入一个待办事项
-        input_box = self.browser.find_element_by_tag_name('id_new_item')
+        input_box = self.browser.find_element_by_id('id_new_item')
         self.assertEqual(
             input_box.get_attribute('placeholder'),
             '输入一个待办事项'
@@ -38,9 +38,10 @@ class NewVisitorTest(unittest.TestCase):
 
         # 页面显示"1：买一件衣服"
         table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_element_by_tag_name('tr')
+        rows = table.find_elements_by_tag_name('tr')
         self.assertTrue(
-            any(row.text == '1:买一件衣服' for row in rows)
+            any(row.text == '1:买一件衣服' for row in rows),
+            '新添加的待办事项保存失败'
         )
 
         # 页面又显示了一个文本框，可以输入其它待办事项
