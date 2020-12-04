@@ -2,22 +2,33 @@ from django.test import LiveServerTestCase
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import WebDriverException
 
 import time
 import unittest
 
+MAX_WAIT = 10
 
 class NewVisitorTest(LiveServerTestCase):
+
     def setUp(self) -> None:
         self.browser = webdriver.Firefox()
 
     def tearDown(self) -> None:
         self.browser.quit()
 
-    def check_for_row_in_list_table(self, row_text):
-        table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertIn(row_text, [row.text for row in rows])
+    def wait_for_row_in_list_table(self, row_text):
+        start_time = time.time()
+        while True:
+            try:
+                table = self.browser.find_element_by_id('id_list_table')
+                rows = table.find_elements_by_tag_name('tr')
+                self.assertIn(row_text, [row.text for row in rows])
+                return
+            except(AssertionError, WebDriverException) as e:
+                if time.time() - start_time > MAX_WAIT:
+                    raise e
+                time.sleep(0.5)
 
     def test_can_start_a_list_and_retrieve_it_later(self):
         # 张三听说有一个在线待办事项应用
@@ -38,15 +49,11 @@ class NewVisitorTest(LiveServerTestCase):
 
         # 他在一个文本框中输入了"买一件衣服"
         input_box.send_keys("买一件衣服")
-
         # 输入完成后，按回车，页面刷新
         input_box.send_keys(Keys.ENTER)
-        time.sleep(1)
 
         # 页面显示"1：买一件衣服"
-        table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_elements_by_tag_name('tr')
-        self.check_for_row_in_list_table('1：买一件衣服')
+        self.wait_for_row_in_list_table('1：买一件衣服')
 
         # 页面又显示了一个文本框，可以输入其它待办事项
         input_box = self.browser.find_element_by_id('id_new_item')
@@ -57,14 +64,12 @@ class NewVisitorTest(LiveServerTestCase):
 
         # 他输入了"买一条裤子"
         input_box.send_keys("买一条裤子")
-
         # 输入完成后，按回车，页面刷新
         input_box.send_keys(Keys.ENTER)
-        time.sleep(1)
 
         # 页面再次刷新，"1：买一件衣服"和"2：买一条裤子"这两条备忘
-        self.check_for_row_in_list_table('1：买一件衣服')
-        self.check_for_row_in_list_table('2：买一条裤子')
+        self.wait_for_row_in_list_table('1：买一件衣服')
+        self.wait_for_row_in_list_table('2：买一条裤子')
 
         self.fail("Finish the test!")
 
