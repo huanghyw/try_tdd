@@ -30,7 +30,7 @@ class NewVisitorTest(LiveServerTestCase):
                     raise e
                 time.sleep(0.5)
 
-    def test_can_start_a_list_and_retrieve_it_later(self):
+    def test_can_start_a_list_for_one_user(self):
         # 张三听说有一个在线待办事项应用
         # 打开浏览器，访问这个应用的网址
         self.browser.get(self.live_server_url)
@@ -71,7 +71,53 @@ class NewVisitorTest(LiveServerTestCase):
         self.wait_for_row_in_list_table('1：买一件衣服')
         self.wait_for_row_in_list_table('2：买一条裤子')
 
-        self.fail("Finish the test!")
+        # 他很满意，去睡觉了
 
-        # 接下来检查网站到底能不能记住待办事项
+    def test_multiple_users_can_start_lists_at_different_urls(self):
+        # 张三新建一个待办事项
+        self.browser.get(self.live_server_url)
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('买一瓶可乐')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1:买一瓶可乐')
+
+        # 他看见清单有一个唯一的URL
+        zhangsan_list_url = self.browser.current_url
+        self.assertRegex(zhangsan_list_url, '/list/.+')
+
+        # 现在李四访问了网站
+
+        ## 我们使用一个新的浏览器回话
+        ## 确保张三的信息不会从Cookie中泄露出去
+        self.browser.quit()
+        self.browser = webdriver.Firefox()
+
+        # 李四访问首页
+        # 页面中看不到张三的清单
+        self.browser.get(self.live_server_url)
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('买一瓶可乐', page_text)
+        self.assertNotIn('买一件衣服', page_text)
+
+        # 李四输入一个新的待办事项，新建一个清单
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('买一个气球')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1:买一个气球')
+
+        # 李四获得了他的一个唯一URL
+        lisi_list_url = self.browser.current_url
+        self.assertRegex(lisi_list_url, '/list/.+')
+        self.assertNotEqual(lisi_list_url, zhangsan_list_url)
+
+        # 这个页面没有张三的清单
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('买一瓶可乐', page_text)
+        self.assertIn('买一个气球', page_text)
+
+        # 两个人都很满意，然后去睡觉了
+
         # 。。。
+
+        # 页面中有一些解说性的文字
+        self.fail("Finish the test!")
