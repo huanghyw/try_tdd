@@ -79,11 +79,11 @@ class NewVisitorTest(LiveServerTestCase):
         inputbox = self.browser.find_element_by_id('id_new_item')
         inputbox.send_keys('买一瓶可乐')
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_list_table('1:买一瓶可乐')
+        self.wait_for_row_in_list_table('1：买一瓶可乐')
 
         # 他看见清单有一个唯一的URL
         zhangsan_list_url = self.browser.current_url
-        self.assertRegex(zhangsan_list_url, '/list/.+')
+        self.assertRegex(zhangsan_list_url, '/lists/.+')
 
         # 现在李四访问了网站
 
@@ -103,11 +103,11 @@ class NewVisitorTest(LiveServerTestCase):
         inputbox = self.browser.find_element_by_id('id_new_item')
         inputbox.send_keys('买一个气球')
         inputbox.send_keys(Keys.ENTER)
-        self.wait_for_row_in_list_table('1:买一个气球')
+        self.wait_for_row_in_list_table('1：买一个气球')
 
         # 李四获得了他的一个唯一URL
         lisi_list_url = self.browser.current_url
-        self.assertRegex(lisi_list_url, '/list/.+')
+        self.assertRegex(lisi_list_url, '/lists/.+')
         self.assertNotEqual(lisi_list_url, zhangsan_list_url)
 
         # 这个页面没有张三的清单

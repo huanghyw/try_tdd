@@ -4,10 +4,15 @@
     <title>待办事项【To-Do lists】</title>
 </head>
 <body>
-    <h1>添加待办事项</h1>
+    <h1>你的待办事项</h1>
     <form method="POST" action="/">
         <input id="id_new_item" name="item_text" placeholder="输入一个待办事项" />
         {% csrf_token %}
     </form>
+    <table id="id_list_table">
+        {% for item in items %}
+            <tr><td>{{ forloop.counter }}：{{ item.text }}</td></tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
